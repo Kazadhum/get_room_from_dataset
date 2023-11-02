@@ -115,8 +115,10 @@ def filter_poses(camera_pose_name_list, camera_poses_path):
 
         camera_position = pose_dict[pose_file_name][0:3]
         
-        camera_is_inside_polyhedron = polyhedron.is_inside_surface(camera_position)
-        print(camera_is_inside_polyhedron)
+        # check this out -> https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.PolyDataFilters.ray_trace.html
+
+        # camera_is_inside_polyhedron = polyhedron.is_inside_surface(camera_position)
+        # print(camera_is_inside_polyhedron)
         
 
     # print(polyhedron)
