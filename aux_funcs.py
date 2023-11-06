@@ -2,6 +2,8 @@ import os
 import math
 import numpy as np
 import pyvista as pv
+import time
+import open3d as o3d
 
 def get_files_from_directory(path):
     """Input: a path to a directory; Output: a list of all the files in that directory"""
@@ -86,7 +88,7 @@ def filter_poses(camera_pose_name_list, camera_poses_path):
     pose_dict = get_pose_dict(camera_pose_name_list, camera_poses_path)
 
     # Defining the polyhedron's vertices (using CloudCompare to get these values)
-    poly_vertices = np.array([
+    bb_vertices = [
         [22.712818, 11.215570, 2.639785],
         [18.549446, 11.224643, 2.602052],
         [18.500113, 7.984735, 2.602463],
@@ -95,30 +97,61 @@ def filter_poses(camera_pose_name_list, camera_poses_path):
         [18.597948, 11.257102, -0.026202],
         [18.548159, 7.988379, -0.032970],
         [22.677464, 7.987204, -0.027993]
-    ])
+    ]
 
     # Defining the polyhedron's faces
-    poly_faces = np.array([
-        [1,2,3,4],
-        [5,6,7,8],
-        [1,5,6,2],
-        [2,6,7,3],
-        [3,7,8,4],
-        [4,8,5,1]
-    ])
+    #poly_faces = np.array([
+    #    [1,2,3,4],
+    #    [5,6,7,8],
+    #    [1,5,6,2],
+    #    [2,6,7,3],
+    #    [3,7,8,4],
+    #    [4,8,5,1]
+    #])
 
-    polyhedron = pv.PolyData(poly_vertices, poly_faces)
+    #polyhedron = pv.PolyData(poly_vertices, poly_faces)
+    bb_vertices = o3d.utility.Vector3dVector(bb_vertices)
+
+    bb = o3d.geometry.OrientedBoundingBox.create_from_points(bb_vertices)
 
     list_of_poses_in_polyhedron = []
 
-    for pose_file_name in pose_dict:
+    camera_position_list = [pose_dict[pose_file_name][0:3] for pose_file_name in pose_dict]
+   
+    camera_position_list_vec = o3d.utility.Vector3dVector(camera_position_list)
+    
+    ind = bb.get_point_indices_within_bounding_box(points=camera_position_list_vec)
+    
+    pose_file_name_list = [pose_file_name for pose_file_name in pose_dict]
+    pose_file_name_in_bb_list = [pose_file_name_list[i] for i in ind]
 
-        camera_position = pose_dict[pose_file_name][0:3]
-        
-        # check this out -> https://docs.pyvista.org/version/stable/api/core/_autosummary/pyvista.PolyDataFilters.ray_trace.html
 
-        # camera_is_inside_polyhedron = polyhedron.is_inside_surface(camera_position)
-        # print(camera_is_inside_polyhedron)
-        
+    return pose_file_name_in_bb_list
 
-    # print(polyhedron)
+def make_sub_dataset(pose_file_list: list):
+
+    import shutil
+    
+    source_pose_directory = '/home/diogo/Desktop/mp3d_dataset/2azQ1b91cZZ/v1/scans/2azQ1b91cZZ/2azQ1b91cZZ/matterport_camera_poses'
+
+    dest_pose_directory = '/home/diogo/Desktop/sub_mp3d_dataset/camera_poses'
+    
+    source_color_image_directory = '/home/diogo/Desktop/mp3d_dataset/2azQ1b91cZZ/v1/scans/2azQ1b91cZZ/2azQ1b91cZZ/matterport_color_images'
+
+    dest_color_image_directory = '/home/diogo/Desktop/sub_mp3d_dataset/color_images'
+
+    for pose_file in pose_file_list:
+
+        # copy pose files
+        source_pose_path = os.path.join(source_pose_directory, os.path.basename(pose_file))
+        dest_pose_path = os.path.join(dest_pose_directory, os.path.basename(pose_file))
+        shutil.copy(source_pose_path, dest_pose_path)
+
+        # copy rgb image files
+        color_image_file = pose_file.replace('.txt', '.jpg')
+        color_image_file = color_image_file.replace('pose_', 'i')
+        source_color_image_path = os.path.join(source_color_image_directory, os.path.basename(color_image_file))
+        dest_color_image_path = os.path.join(dest_color_image_directory, os.path.basename(color_image_file))
+        shutil.copy(source_color_image_path, dest_color_image_path)
+
+    return 0
