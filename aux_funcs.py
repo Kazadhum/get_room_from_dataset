@@ -140,6 +140,12 @@ def make_sub_dataset(pose_file_list: list):
 
     dest_color_image_directory = '/home/diogo/Desktop/sub_mp3d_dataset/color_images'
 
+    region_number = 18
+
+    source_submesh_directory = '/home/diogo/Desktop/mp3d_dataset/2azQ1b91cZZ/v1/scans/2azQ1b91cZZ/2azQ1b91cZZ/region_segmentations'
+
+    dest_submesh_directory = '/home/diogo/Desktop/sub_mp3d_dataset/mesh'
+
     for pose_file in pose_file_list:
 
         # copy pose files
@@ -153,5 +159,10 @@ def make_sub_dataset(pose_file_list: list):
         source_color_image_path = os.path.join(source_color_image_directory, os.path.basename(color_image_file))
         dest_color_image_path = os.path.join(dest_color_image_directory, os.path.basename(color_image_file))
         shutil.copy(source_color_image_path, dest_color_image_path)
+
+    # copy sub-mesh
+    source_submesh_path = os.path.join(source_submesh_directory, os.path.basename('region'+str(region_number)+'.ply'))
+    dest_submesh_path = os.path.join(dest_submesh_directory, os.path.basename('region'+str(region_number)+'.ply'))
+    shutil.copy(source_submesh_path, dest_submesh_path)
 
     return 0
