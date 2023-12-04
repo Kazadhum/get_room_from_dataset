@@ -128,6 +128,7 @@ def filter_poses(camera_pose_name_list, camera_poses_path):
 
     return pose_file_name_in_bb_list
 
+
 def make_sub_dataset(pose_file_list: list):
 
     import shutil

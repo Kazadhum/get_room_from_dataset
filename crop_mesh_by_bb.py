@@ -13,9 +13,19 @@ def main():
 
     unpolished_region_mesh = o3d.io.read_triangle_mesh(region_mesh_path)
 
-    o3d.visualization.draw_geometries([unpolished_region_mesh])
+    region_point_cloud = o3d.geometry.PointCloud()
+    region_point_cloud.points = unpolished_region_mesh.vertices
 
-    crop_mesh_by_bb(original_mesh_path, 0, 0, 0)
+    region_bb = region_point_cloud.get_oriented_bounding_box()
+
+    region_mesh_oriented = unpolished_region_mesh.rotate(region_bb.R)
+
+    original_mesh = o3d.io.read_triangle_mesh(original_mesh_path)
+    original_mesh_oriented = original_mesh.rotate(region_bb.R)
+
+    o3d.visualization.draw_geometries([original_mesh_oriented, region_bb])
+
+    # crop_mesh_by_bb(original_mesh_path, 0, 0, 0)
 
 if __name__ == '__main__':
     main()
